@@ -3,4 +3,10 @@
 
     <string name="facebook_app_id">857902191064843</string>
     <string name="fb_login_protocol_scheme">fb857902191064843</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>
