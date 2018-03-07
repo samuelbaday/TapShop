@@ -11,6 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -45,9 +48,16 @@ public class LoginPage extends AppCompatActivity {
     @Bind(R.id.facebook_profile) ProfilePictureView profilePictureView;
     @Bind(R.id.facebook_login) LoginButton loginButton;
 
+    @Bind(R.id.progressBarHolder)
+    ViewGroup progressBarHolder;
+    AlphaAnimation inAnimation;
+    AlphaAnimation outAnimation;
+
     CallbackManager callbackManager;
     private static final String EMAIL = "email";
     private FirebaseAuth mAuth;
+
+    UserProfile userProfile = new UserProfile();
 
     @Override
     public void onStart() {
@@ -98,6 +108,7 @@ public class LoginPage extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 final String[] userId = new String[1];
+                showLoading();
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
                         new GraphRequest.GraphJSONObjectCallback() {
@@ -133,12 +144,12 @@ public class LoginPage extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-                // App code
+                hideLoading();
             }
 
             @Override
             public void onError(FacebookException exception) {
-                // App code
+                hideLoading();
             }
         });
 
@@ -191,7 +202,13 @@ public class LoginPage extends AppCompatActivity {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-
+                            try {
+                                userProfile.setUserName(object.getString("name"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            userProfile.setUserEmail(email);
+                            userProfile.setUserId(userId[0]);
                             fireAuthMake(email,userId[0]);
                         }
                     });
@@ -212,8 +229,8 @@ public class LoginPage extends AppCompatActivity {
     }
 
     public void setProfilePic(String userId){
-        profilePictureView = (ProfilePictureView) findViewById(R.id.facebook_profile);
-        profilePictureView.setProfileId(userId);
+//        profilePictureView = (ProfilePictureView) findViewById(R.id.facebook_profile);
+//        profilePictureView.setProfileId(userId);
     }
 
     public void fireAuthMake(final String email, final String id){
@@ -234,7 +251,15 @@ public class LoginPage extends AppCompatActivity {
                                                 // Sign in success, update UI with the signed-in user's information
                                                 Log.d("FIRE_AUTH", "signInWithEmail:success");
                                                 FirebaseUser user = mAuth.getCurrentUser();
-//                                                                        updateUI(user);
+//
+                                                new Thread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        Intent mainAct = new Intent(LoginPage.this,MainActivity.class);
+                                                        mainAct.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                                        startActivity(mainAct);
+                                                    }
+                                                }).start();
                                             } else {
                                                 // If sign in fails, display a message to the user.
                                                 Log.w("FIRE_AUTH", "signInWithEmail:failure", task.getException());
@@ -248,7 +273,7 @@ public class LoginPage extends AppCompatActivity {
                                         }
                                     });
                         } else {
-                            // If sign in fails, display a message to the user.
+                            hideLoading();
                             Log.w("FIRE_AUTH", "createUserWithEmail:failure", task.getException());
                             if(task.getException().toString().contains("already in use")){
                                 Log.i("ALREADY_EXISTS","ALREADY_EXISTS");
@@ -268,6 +293,7 @@ public class LoginPage extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("FIRE_AUTH", "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            hideLoading();
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -277,10 +303,41 @@ public class LoginPage extends AppCompatActivity {
                                 }
                             }).start();
                         } else {
+                            hideLoading();
                             // If sign in fails, display a message to the user.
                             Log.w("FIRE_AUTH", "signInWithEmail:failure", task.getException());
                         }
                     }
                 });
+    }
+
+    public void showLoading() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        inAnimation = new AlphaAnimation(0f, 1f);
+                        inAnimation.setDuration(200);
+                        progressBarHolder.setAnimation(inAnimation);
+                        progressBarHolder.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        }).start();
+
+    }
+
+    public void hideLoading() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                outAnimation = new AlphaAnimation(1f, 0f);
+                outAnimation.setDuration(200);
+                progressBarHolder.setAnimation(outAnimation);
+                progressBarHolder.setVisibility(View.GONE);
+            }
+        });
     }
 }

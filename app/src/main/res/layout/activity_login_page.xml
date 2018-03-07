@@ -24,6 +24,7 @@
                 android:layout_height="wrap_content">
 
                 <com.facebook.login.widget.ProfilePictureView
+                    android:visibility="gone"
                     android:id="@+id/facebook_profile"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
@@ -32,6 +33,10 @@
             </RelativeLayout>
 
             <com.facebook.login.widget.LoginButton
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp"
                 android:id="@+id/facebook_login"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -39,4 +44,21 @@
         </LinearLayout>
 
     </RelativeLayout>
+
+    <FrameLayout
+        android:id="@+id/progressBarHolder"
+        android:animateLayoutChanges="true"
+        android:visibility="gone"
+        android:alpha="0.4"
+        android:background="#000000"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_gravity="center" />
+    </FrameLayout>
 </RelativeLayout>
